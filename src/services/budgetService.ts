@@ -1,5 +1,6 @@
 import { BudgetInput, BudgetResult, MaterialItem, CategorySummary } from '../types';
 import { COEFFICIENTS, PRICES, STANDARD_MULTIPLIERS, COMPANY_INFO } from '../data/sinapi';
+import { GoogleGenAI } from "@google/genai";
 
 export function calculateBudget(input: BudgetInput): BudgetResult {
   const { 
@@ -8,7 +9,8 @@ export function calculateBudget(input: BudgetInput): BudgetResult {
     kitchens, serviceAreas, halls, internalPaintFinish, 
     externalPaintFinish, externalCoating, countertopStone, 
     wallPaintColor, ceilingPaintColor, externalPaintColor,
-    externalPaintBrand, countertopType, floor
+    externalPaintBrand, countertopType, floor, ceilingType,
+    lotWidth, lotLength, facadeStyle
   } = input;
   
   const multiplier = STANDARD_MULTIPLIERS[standard] || 1.0;
@@ -88,6 +90,17 @@ export function calculateBudget(input: BudgetInput): BudgetResult {
   const stonePrice = countertopStone === 'granito' ? PRICES.countertop_granite : countertopStone === 'marmore' ? PRICES.countertop_marble : countertopStone === 'quartzo' ? PRICES.countertop_quartz : PRICES.countertop_inox;
   addMaterial(`Bancada (${countertopType} - ${countertopStone})`, 'm', kitchens * 2 + bathrooms * 1, stonePrice, 'Acabamento');
 
+  // 6.1 Ceiling (Forro)
+  if (ceilingType !== 'nenhum') {
+    const ceilingPrice = ceilingType === 'gesso_cola' ? PRICES.ceiling_gesso_cola :
+                         ceilingType === 'gesso_drywall' ? PRICES.ceiling_gesso_drywall :
+                         PRICES.ceiling_pvc;
+    const ceilingName = ceilingType === 'gesso_cola' ? 'Forro de Gesso Cola' :
+                        ceilingType === 'gesso_drywall' ? 'Forro de Gesso Drywall' :
+                        'Forro de PVC';
+    addMaterial(ceilingName, 'm²', area, ceilingPrice, 'Acabamento');
+  }
+
   // 7. Electrical & Plumbing (Detailed by rooms)
   const roomCount = bedrooms + suites + bathrooms + kitchens + serviceAreas + halls;
   addMaterial('Fiação e Dispositivos Elétricos (Detalhado)', 'Conjunto', roomCount, 150.0 * multiplier, 'Elétrica');
@@ -100,7 +113,9 @@ export function calculateBudget(input: BudgetInput): BudgetResult {
   addMaterial(`Janelas (${window === 'aluminio' ? 'Alumínio' : 'Simples'})`, 'Unid', windowQty, window === 'aluminio' ? PRICES.window_aluminum : PRICES.window_simple, 'Portas e Janelas');
 
   // 9. Labor (Mão de obra) - Distributed by categories
-  const totalLaborCost = area * PRICES.labor_m2 * multiplier;
+  const savedLaborM2 = localStorage.getItem('admin_labor_m2');
+  const baseLaborM2 = savedLaborM2 ? parseFloat(savedLaborM2) : PRICES.labor_m2;
+  const totalLaborCost = area * baseLaborM2 * multiplier;
   
   const laborWeights: Record<string, number> = {
     'Fundação': 0.15,
@@ -166,6 +181,15 @@ export function saveBudget(budget: BudgetResult) {
   localStorage.setItem('budget_history', JSON.stringify(updatedHistory));
 }
 
+export function updateBudget(budget: BudgetResult) {
+  const history = getHistory();
+  const index = history.findIndex(b => b.input.id === budget.input.id);
+  if (index !== -1) {
+    history[index] = budget;
+    localStorage.setItem('budget_history', JSON.stringify(history));
+  }
+}
+
 export function getHistory(): BudgetResult[] {
   const data = localStorage.getItem('budget_history');
   return data ? JSON.parse(data) : [];
@@ -173,13 +197,17 @@ export function getHistory(): BudgetResult[] {
 
 export function generateProposalText(result: BudgetResult): string {
   const { input, totalCost, totalMaterialCost, totalLaborCost, costPerM2, estimatedDeadline, materials } = result;
+  const hideM2 = localStorage.getItem('admin_hide_m2') === 'true';
   
   return `
-*PROPOSTA TÉCNICA DE CONSTRUÇÃO - VISAR CONSTRUTORA*
+*PROPOSTA DE CONSTRUÇÃO - VISAR CONSTRUTORA*
 --------------------------------------------------
 EMPRESA: ${COMPANY_INFO.name}
 CNPJ: ${COMPANY_INFO.cnpj}
 CONTATO: ${COMPANY_INFO.email} | ${COMPANY_INFO.website}
+
+SOBRE NÓS:
+${COMPANY_INFO.description}
 
 CLIENTE: ${input.clientName}
 LOCAL: ${input.city} - ${input.state}
@@ -197,10 +225,12 @@ RESUMO DO PROJETO:
 - Revestimento Externo: ${input.externalCoating.toUpperCase()} (${input.externalPaintColor})
 - Marca da Tinta (Externa): ${input.externalPaintBrand}
 - Bancadas: ${input.countertopType} em ${input.countertopStone.toUpperCase()}
+- Forro: ${input.ceilingType === 'nenhum' ? 'NÃO INCLUSO' : input.ceilingType.replace('_', ' ').toUpperCase()}
+- Dimensões do Lote: ${input.lotWidth}m x ${input.lotLength}m
+- Estilo da Fachada: ${input.facadeStyle.toUpperCase()}
 
 VALORES ESTIMADOS:
-- Custo por m²: ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(costPerM2)}
-- TOTAL EM MATERIAIS: ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalMaterialCost)}
+${!hideM2 ? `- Custo por m²: ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(costPerM2)}\n` : ''}- TOTAL EM MATERIAIS: ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalMaterialCost)}
 - TOTAL EM MÃO DE OBRA: ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalLaborCost)}
 - VALOR TOTAL DA OBRA: ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalCost)}
 - Prazo Estimado: ${estimatedDeadline}
@@ -213,7 +243,7 @@ ${materials.filter(m => m.materialPrice > 0).slice(0, 12).map(m => `- ${m.name}:
 ... (lista completa anexa ao orçamento detalhado)
 
 OBSERVAÇÕES:
-1. Os valores são baseados em índices médios do SINAPI e tecnologia digital de orçamentação.
+1. Os valores são baseados em índices médios de mercado e tecnologia digital de orçamentação.
 2. Inclui reboco e pintura completa (paredes e teto) conforme especificações técnicas.
 3. Bancadas em ${input.countertopStone.toUpperCase()} inclusas para cozinha e banheiros.
 4. A validade deste orçamento é de 15 dias.
@@ -223,4 +253,47 @@ VISAR CONSTRUTORA
 "Construindo sonhos com inteligência e tecnologia."
 --------------------------------------------------
   `.trim();
+}
+
+export async function generateHouseImage(input: BudgetInput): Promise<string | undefined> {
+  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+  
+  const prompt = `Arquitetura contemporânea brasileira - MODELO VISAR CONSTRUTORA: 
+    Uma casa moderna de alto padrão, TÉRREA, seguindo RIGOROSAMENTE este modelo arquitetônico:
+    - Fachada minimalista com linhas retas e platibanda (telhado oculto).
+    - Volume principal retangular e simétrico.
+    - Lado Esquerdo: Entrada recuada com uma PORTA PRETA imponente e alta (3,50m).
+    - Lado Direito: Uma GRANDE JANELA DE VIDRO vertical que ocupa quase toda a altura da fachada.
+    - Detalhes: Frisos horizontais e verticais finos em metal dourado/latão (gold/brass trim) decorando a fachada.
+    - Cores e Texturas: Paredes com textura ${input.externalCoating} na cor ${input.externalPaintColor} (Marca ${input.externalPaintBrand}).
+    - Paisagismo: Caminho de concreto com grama entre as placas, pequenos arbustos redondos (buxinhos) na frente.
+    - Proporções: Área de ${input.area}m², largura de fachada de 7 a 8 metros.
+    - Contexto: Terreno de ${input.lotWidth}m x ${input.lotLength}m, iluminação cênica noturna ou entardecer, fotorealista, 8k, renderização profissional de arquitetura.
+    IMPORTANTE: Mantenha a geometria exata do modelo descrito (porta à esquerda, vidro à direita, frisos dourados), alterando apenas as cores e texturas conforme solicitado.`;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash-image',
+      contents: {
+        parts: [{ text: prompt }],
+      },
+      config: {
+        imageConfig: {
+          aspectRatio: "16:9",
+          imageSize: "1K"
+        }
+      }
+    });
+
+    if (response.candidates?.[0]?.content?.parts) {
+      for (const part of response.candidates[0].content.parts) {
+        if (part.inlineData) {
+          return `data:image/png;base64,${part.inlineData.data}`;
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Error generating image:", error);
+  }
+  return undefined;
 }

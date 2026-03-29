@@ -4,25 +4,51 @@ import { Home } from './pages/Home';
 import { BudgetForm } from './pages/NewBudget';
 import { BudgetResultView } from './pages/BudgetResultView';
 import { HistoryList } from './pages/HistoryList';
+import { AdminArea } from './pages/AdminArea';
 import { BudgetInput, BudgetResult } from './types';
-import { calculateBudget, saveBudget, getHistory } from './services/budgetService';
+import { calculateBudget, saveBudget, updateBudget, getHistory, generateHouseImage } from './services/budgetService';
+import { Loader2 } from 'lucide-react';
 
-type View = 'home' | 'new' | 'result' | 'history';
+type View = 'home' | 'new' | 'result' | 'history' | 'admin';
 
 export default function App() {
   const [view, setView] = useState<View>('home');
   const [currentBudget, setCurrentBudget] = useState<BudgetResult | null>(null);
   const [history, setHistory] = useState<BudgetResult[]>([]);
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
 
   useEffect(() => {
     setHistory(getHistory());
+    window.scrollTo(0, 0);
+
+    const handleOpenAdmin = () => setView('admin');
+    window.addEventListener('open-admin', handleOpenAdmin);
+    return () => window.removeEventListener('open-admin', handleOpenAdmin);
   }, [view]);
 
-  const handleCreateBudget = (input: BudgetInput) => {
+  const handleCreateBudget = async (input: BudgetInput) => {
+    // 1. Calculate budget immediately
     const result = calculateBudget(input);
-    saveBudget(result);
     setCurrentBudget(result);
+    saveBudget(result); // Save immediately so it's in history
+    setHistory(getHistory());
     setView('result');
+    
+    // 2. Start image generation in background
+    setIsGeneratingImage(true);
+    try {
+      const imageUrl = await generateHouseImage(input);
+      if (imageUrl) {
+        const finalResult = { ...result, imageUrl };
+        setCurrentBudget(finalResult);
+        updateBudget(finalResult); // Update the existing record
+        setHistory(getHistory());
+      }
+    } catch (error) {
+      console.error("Error generating image:", error);
+    } finally {
+      setIsGeneratingImage(false);
+    }
   };
 
   const handleSelectHistory = (budget: BudgetResult) => {
@@ -47,6 +73,7 @@ export default function App() {
           <BudgetResultView 
             result={currentBudget} 
             onBack={() => setView('history')} 
+            isGeneratingImage={isGeneratingImage}
           />
         ) : <Home onNewBudget={() => setView('new')} onViewHistory={() => setView('history')} />;
       case 'history':
@@ -57,6 +84,8 @@ export default function App() {
             onDelete={handleDeleteHistory}
           />
         );
+      case 'admin':
+        return <AdminArea onBack={() => setView('home')} />;
       default:
         return <Home onNewBudget={() => setView('new')} onViewHistory={() => setView('history')} />;
     }
@@ -64,11 +93,12 @@ export default function App() {
 
   const getActiveTab = (): 'home' | 'new' | 'history' => {
     if (view === 'result') return 'history';
+    if (view === 'admin') return 'home';
     return view as 'home' | 'new' | 'history';
   };
 
   return (
-    <Layout activeTab={getActiveTab()} onTabChange={(tab) => setView(tab)}>
+    <Layout view={view} activeTab={getActiveTab()} onTabChange={(tab) => setView(tab)} onAdmin={() => setView('admin')}>
       {renderView()}
     </Layout>
   );

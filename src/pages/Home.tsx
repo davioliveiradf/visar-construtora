@@ -12,18 +12,10 @@ export function Home({ onNewBudget, onViewHistory }: HomeProps) {
     <div className="space-y-16 py-8">
       {/* Hero Section */}
       <section className="text-center space-y-8 relative">
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          className="inline-flex items-center gap-2 bg-blue-500/10 text-blue-400 border border-blue-500/20 px-4 py-1.5 rounded-full text-sm font-semibold mb-4 backdrop-blur-sm"
-        >
-          <CheckCircle2 className="w-4 h-4" />
-          Engine SINAPI v2.5 Ativado
-        </motion.div>
         <h1 className="text-5xl md:text-7xl font-black tracking-tight text-blue-50 max-w-4xl mx-auto leading-[1.1]">
           Construção Civil <br />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-blue-500">
-            Inteligente & Digital
+            Inteligente
           </span>
         </h1>
         <p className="text-xl text-blue-200/80 max-w-2xl mx-auto leading-relaxed">
@@ -77,8 +69,8 @@ export function Home({ onNewBudget, onViewHistory }: HomeProps) {
             <div className="text-xs uppercase tracking-widest font-bold text-blue-400/70">Limite Técnico</div>
           </div>
           <div>
-            <div className="text-4xl font-black text-blue-50 mb-1">SINAPI</div>
-            <div className="text-xs uppercase tracking-widest font-bold text-blue-400/70">Protocolo Base</div>
+            <div className="text-4xl font-black text-blue-50 mb-1">V2.5</div>
+            <div className="text-xs uppercase tracking-widest font-bold text-blue-400/70">Versão Ativa</div>
           </div>
           <div>
             <div className="text-4xl font-black text-blue-50 mb-1">100%</div>

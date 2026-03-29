@@ -9,14 +9,14 @@ interface BudgetFormProps {
 export function BudgetForm({ onSubmit }: BudgetFormProps) {
   const [formData, setFormData] = useState<Partial<BudgetInput>>({
     clientName: '',
-    area: 50,
+    area: 89,
     city: '',
     state: '',
     standard: 'medio',
-    foundation: 'radier',
+    foundation: 'sapata',
     wall: 'alvenaria',
-    roof: 'ceramica',
-    roofStructure: 'madeira',
+    roof: 'fibrocimento',
+    roofStructure: 'metalica',
     finish: 'medio',
     floor: 'Porcelanato',
     door: 'madeira',
@@ -31,16 +31,21 @@ export function BudgetForm({ onSubmit }: BudgetFormProps) {
     externalPaintFinish: 'fosca',
     wallPaintColor: 'Branco Neve',
     ceilingPaintColor: 'Branco Gelo',
-    externalPaintColor: 'Cinza Platina',
+    externalPaintColor: 'Preto',
     externalPaintBrand: 'Suvinil',
     externalCoating: 'pintura',
     countertopType: 'Cozinha e Banheiro',
     countertopStone: 'granito',
+    ceilingType: 'gesso_drywall',
+    lotWidth: 10,
+    lotLength: 20,
+    facadeStyle: 'platibanda',
   });
 
   const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.clientName || !formData.area || !formData.city || !formData.state) {
       setError('Por favor, preencha todos os campos obrigatórios (Nome, Área, Cidade e Estado).');
@@ -53,11 +58,16 @@ export function BudgetForm({ onSubmit }: BudgetFormProps) {
       return;
     }
 
-    onSubmit({
-      ...formData,
-      id: crypto.randomUUID(),
-      createdAt: new Date().toISOString(),
-    } as BudgetInput);
+    setIsSubmitting(true);
+    try {
+      await onSubmit({
+        ...formData,
+        id: crypto.randomUUID(),
+        createdAt: new Date().toISOString(),
+      } as BudgetInput);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -142,6 +152,47 @@ export function BudgetForm({ onSubmit }: BudgetFormProps) {
         <div className="pt-4">
           <h3 className="text-lg font-bold text-blue-100 mb-4 flex items-center gap-2">
             <div className="w-1 h-6 bg-blue-500 rounded-full shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
+            Terreno e Estilo da Fachada
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-blue-400/70 uppercase tracking-widest">Largura do Lote (m)</label>
+              <input
+                type="number"
+                name="lotWidth"
+                value={formData.lotWidth}
+                onChange={handleChange}
+                min="3"
+                className="w-full bg-zinc-950/50 border border-white/10 rounded-xl px-4 py-3 text-blue-100 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-blue-400/70 uppercase tracking-widest">Comprimento do Lote (m)</label>
+              <input
+                type="number"
+                name="lotLength"
+                value={formData.lotLength}
+                onChange={handleChange}
+                min="5"
+                className="w-full bg-zinc-950/50 border border-white/10 rounded-xl px-4 py-3 text-blue-100 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-blue-400/70 uppercase tracking-widest">Estilo da Fachada</label>
+              <select name="facadeStyle" value={formData.facadeStyle} onChange={handleChange} className="w-full bg-zinc-950/50 border border-white/10 rounded-xl px-4 py-3 text-blue-100 focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                <option value="platibanda">Platibanda (Moderna/Oculta)</option>
+                <option value="moderna">Moderna (Vidro e Linhas Retas)</option>
+                <option value="minimalista">Minimalista</option>
+                <option value="colonial">Colonial (Telhado Aparente)</option>
+                <option value="rustica">Rústica (Madeira e Pedra)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div className="pt-4">
+          <h3 className="text-lg font-bold text-blue-100 mb-4 flex items-center gap-2">
+            <div className="w-1 h-6 bg-blue-500 rounded-full shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
             Composição de Cômodos
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
@@ -178,7 +229,7 @@ export function BudgetForm({ onSubmit }: BudgetFormProps) {
               <label className="text-xs font-bold text-blue-400/70 uppercase tracking-widest">Fundação</label>
               <select name="foundation" value={formData.foundation} onChange={handleChange} className="w-full bg-zinc-950/50 border border-white/10 rounded-xl px-4 py-3 text-blue-100 focus:ring-2 focus:ring-blue-500 outline-none transition-all">
                 <option value="radier">Radier</option>
-                <option value="sapata">Sapata</option>
+                <option value="sapata">Sapata Corrida</option>
               </select>
             </div>
             <div className="space-y-2">
@@ -200,7 +251,7 @@ export function BudgetForm({ onSubmit }: BudgetFormProps) {
               <label className="text-xs font-bold text-blue-400/70 uppercase tracking-widest">Estrutura Telhado</label>
               <select name="roofStructure" value={formData.roofStructure} onChange={handleChange} className="w-full bg-zinc-950/50 border border-white/10 rounded-xl px-4 py-3 text-blue-100 focus:ring-2 focus:ring-blue-500 outline-none transition-all">
                 <option value="madeira">Madeira</option>
-                <option value="metalica">Metálica</option>
+                <option value="metalica">Perfil Metálico</option>
                 <option value="perfil_aco">Perfil de Aço</option>
               </select>
             </div>
@@ -246,7 +297,7 @@ export function BudgetForm({ onSubmit }: BudgetFormProps) {
             </div>
             <div className="space-y-2">
               <label className="text-xs font-bold text-blue-400/70 uppercase tracking-widest">Cor Externa</label>
-              <input type="text" name="externalPaintColor" value={formData.externalPaintColor} onChange={handleChange} className="w-full bg-zinc-950/50 border border-white/10 rounded-xl px-4 py-3 text-blue-100 focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="Ex: Cinza Urbano" />
+              <input type="text" name="externalPaintColor" value={formData.externalPaintColor} onChange={handleChange} className="w-full bg-zinc-950/50 border border-white/10 rounded-xl px-4 py-3 text-blue-100 focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="Ex: Preto" />
             </div>
           </div>
         </div>
@@ -274,16 +325,30 @@ export function BudgetForm({ onSubmit }: BudgetFormProps) {
                 <option value="inox">Inox</option>
               </select>
             </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-blue-400/70 uppercase tracking-widest">Tipo de Forro</label>
+              <select name="ceilingType" value={formData.ceilingType} onChange={handleChange} className="w-full bg-zinc-950/50 border border-white/10 rounded-xl px-4 py-3 text-blue-100 focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                <option value="nenhum">Sem Forro</option>
+                <option value="gesso_cola">Gesso Cola</option>
+                <option value="gesso_drywall">Gesso Drywall</option>
+                <option value="pvc">Forro PVC</option>
+              </select>
+            </div>
           </div>
         </div>
 
         <button
           type="submit"
-          className="w-full bg-blue-600 text-blue-50 py-5 rounded-2xl font-black text-xl hover:bg-blue-500 transition-all flex items-center justify-center gap-3 shadow-[0_0_30px_rgba(37,99,235,0.3)] hover:scale-[1.01] active:scale-[0.99]"
+          disabled={isSubmitting}
+          className="w-full bg-blue-600 text-blue-50 py-5 rounded-2xl font-black text-xl hover:bg-blue-500 transition-all flex items-center justify-center gap-3 shadow-[0_0_30px_rgba(37,99,235,0.3)] hover:scale-[1.01] active:scale-[0.99] disabled:opacity-70 disabled:cursor-not-allowed disabled:scale-100"
         >
-          <Calculator className="w-7 h-7" />
-          GERAR ORÇAMENTO VISAR CONSTRUTORA
-          <ChevronRight className="w-6 h-6" />
+          {isSubmitting ? (
+            <div className="w-7 h-7 border-4 border-blue-100/30 border-t-blue-100 rounded-full animate-spin" />
+          ) : (
+            <Calculator className="w-7 h-7" />
+          )}
+          {isSubmitting ? 'CALCULANDO...' : 'GERAR ORÇAMENTO VISAR CONSTRUTORA'}
+          {!isSubmitting && <ChevronRight className="w-6 h-6" />}
         </button>
       </form>
     </div>

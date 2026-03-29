@@ -49,6 +49,9 @@ export const PRICES = {
   countertop_marble: 850.0, // per linear meter
   countertop_quartz: 1200.0, // per linear meter
   countertop_inox: 600.0, // per linear meter
+  ceiling_gesso_cola: 45.0, // per m²
+  ceiling_gesso_drywall: 65.0, // per m²
+  ceiling_pvc: 35.0, // per m²
   labor_m2: 850.0, // average labor cost per m²
 };
 
@@ -57,6 +60,7 @@ export const COMPANY_INFO = {
   cnpj: "15.402.649/0001-06",
   website: "www.visarconstrutora.com.br",
   email: "contato@visarconstrutora.com.br",
+  description: "A Visar Construtora é referência em construção civil de alto padrão. Nossa missão é transformar projetos em realidade com máxima eficiência, transparência e inovação tecnológica. Utilizamos os melhores insumos e profissionais qualificados para garantir que cada obra seja um marco de qualidade e durabilidade.",
 };
 
 // Multipliers based on standard

@@ -10,6 +10,10 @@ export type PaintFinish = 'fosca' | 'semi-brilho' | 'acetinada' | 'brilhante';
 export type CountertopStone = 'granito' | 'marmore' | 'quartzo' | 'inox';
 export type ExternalCoating = 'pintura' | 'textura' | 'fuge_pedrisco' | 'grafiato' | 'projetada';
 
+export type CeilingType = 'gesso_cola' | 'gesso_drywall' | 'pvc' | 'nenhum';
+
+export type FacadeStyle = 'platibanda' | 'colonial' | 'moderna' | 'minimalista' | 'rustica';
+
 export interface BudgetInput {
   id: string;
   clientName: string;
@@ -44,6 +48,12 @@ export interface BudgetInput {
   
   countertopType: string;
   countertopStone: CountertopStone;
+  ceilingType: CeilingType;
+  
+  // Lot and Style
+  lotWidth: number;
+  lotLength: number;
+  facadeStyle: FacadeStyle;
   
   createdAt: string;
 }
@@ -74,4 +84,5 @@ export interface BudgetResult {
   totalLaborCost: number;
   costPerM2: number;
   estimatedDeadline: string;
+  imageUrl?: string;
 }

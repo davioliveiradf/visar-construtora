@@ -2,17 +2,19 @@ import React, { useState } from 'react';
 import { BudgetResult } from '../types';
 import { formatCurrency, formatNumber } from '../utils';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
-import { Download, Share2, Copy, Check, ArrowLeft, FileText, LayoutGrid, BarChart3 } from 'lucide-react';
+import { Download, Share2, Copy, Check, ArrowLeft, FileText, LayoutGrid, BarChart3, Loader2 } from 'lucide-react';
 import { generateProposalText } from '../services/budgetService';
+import { ProposalDocument } from '../components/ProposalDocument';
 
 interface BudgetResultViewProps {
   result: BudgetResult;
   onBack: () => void;
+  isGeneratingImage?: boolean;
 }
 
 const COLORS = ['#2563EB', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#06B6D4', '#6366F1', '#F97316'];
 
-export function BudgetResultView({ result, onBack }: BudgetResultViewProps) {
+export function BudgetResultView({ result, onBack, isGeneratingImage }: BudgetResultViewProps) {
   const [viewMode, setViewMode] = useState<'summary' | 'details' | 'proposal'>('summary');
   const [copied, setCopied] = useState(false);
 
@@ -23,16 +25,69 @@ export function BudgetResultView({ result, onBack }: BudgetResultViewProps) {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleShare = async () => {
+    const text = generateProposalText(result);
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Orçamento - ${result.input.clientName}`,
+          text: text,
+        });
+      } catch (err) {
+        console.error('Error sharing:', err);
+      }
+    } else {
+      handleCopyProposal();
+    }
+  };
+
+  const handleExportCSV = () => {
+    const headers = ['Item', 'Categoria', 'Quantidade', 'Unidade', 'Material (R$)', 'Mão de Obra (R$)', 'Total (R$)'];
+    const rows = result.materials.map(m => [
+      m.name,
+      m.category,
+      m.quantity,
+      m.unit,
+      m.materialPrice.toFixed(2),
+      m.laborPrice.toFixed(2),
+      m.totalPrice.toFixed(2)
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(r => r.join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `orcamento_${result.input.clientName.replace(/\s+/g, '_')}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleSendWhatsApp = () => {
+    const text = generateProposalText(result);
+    const encodedText = encodeURIComponent(text);
+    window.open(`https://wa.me/5561999547241?text=${encodedText}`, '_blank');
+  };
+
+  const hideM2 = localStorage.getItem('admin_hide_m2') === 'true';
+
   return (
     <div className="space-y-8 pb-20">
       {/* Header Actions */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <button 
+          type="button"
           onClick={onBack}
-          className="flex items-center gap-2 text-blue-300/70 hover:text-blue-100 transition-colors font-bold uppercase tracking-widest text-xs"
+          className="flex items-center gap-2 px-4 py-2 bg-zinc-900/50 text-blue-300/70 hover:text-blue-100 hover:bg-zinc-800/50 rounded-xl transition-all font-bold uppercase tracking-widest text-[10px] border border-white/5 shadow-lg w-fit"
         >
           <ArrowLeft className="w-4 h-4" />
-          Voltar
+          Voltar ao Histórico
         </button>
         <div className="flex items-center gap-2 bg-zinc-900/50 backdrop-blur-md p-1 rounded-2xl border border-white/10 shadow-lg">
           <button 
@@ -67,7 +122,7 @@ export function BudgetResultView({ result, onBack }: BudgetResultViewProps) {
               <div className="text-xs font-bold text-blue-400/70 uppercase tracking-widest mb-2">Valor Total Estimado</div>
               <div className="text-4xl font-black text-blue-50">{formatCurrency(result.totalCost)}</div>
               <div className="mt-3 text-[10px] text-blue-400 font-bold bg-blue-500/10 inline-block px-2 py-1 rounded-lg border border-blue-500/20">
-                Base SINAPI 2024/25
+                Base de Referência 2024/25
               </div>
             </div>
             <div className="bg-zinc-900/50 backdrop-blur-xl p-6 rounded-3xl border border-white/10 shadow-xl">
@@ -80,13 +135,15 @@ export function BudgetResultView({ result, onBack }: BudgetResultViewProps) {
               <div className="text-2xl font-black text-blue-400">{formatCurrency(result.totalLaborCost)}</div>
               <div className="mt-3 text-[10px] text-blue-400/50 font-bold uppercase tracking-widest">Serviços</div>
             </div>
-            <div className="bg-zinc-900/50 backdrop-blur-xl p-6 rounded-3xl border border-white/10 shadow-xl">
-              <div className="text-xs font-bold text-blue-400/70 uppercase tracking-widest mb-2">Custo por m²</div>
-              <div className="text-2xl font-black text-blue-50">{formatCurrency(result.costPerM2)}</div>
-              <div className="mt-3 text-[10px] text-blue-400 font-bold bg-blue-500/10 inline-block px-2 py-1 rounded-lg border border-blue-500/20">
-                Padrão {result.input.standard.toUpperCase()}
+            {!hideM2 && (
+              <div className="bg-zinc-900/50 backdrop-blur-xl p-6 rounded-3xl border border-white/10 shadow-xl">
+                <div className="text-xs font-bold text-blue-400/70 uppercase tracking-widest mb-2">Custo por m²</div>
+                <div className="text-2xl font-black text-blue-50">{formatCurrency(result.costPerM2)}</div>
+                <div className="mt-3 text-[10px] text-blue-400 font-bold bg-blue-500/10 inline-block px-2 py-1 rounded-lg border border-blue-500/20">
+                  Padrão {result.input.standard.toUpperCase()}
+                </div>
               </div>
-            </div>
+            )}
             <div className="bg-zinc-900/50 backdrop-blur-xl p-6 rounded-3xl border border-white/10 shadow-xl">
               <div className="text-xs font-bold text-blue-400/70 uppercase tracking-widest mb-2">Prazo Estimado</div>
               <div className="text-2xl font-black text-blue-50">{result.estimatedDeadline}</div>
@@ -95,6 +152,40 @@ export function BudgetResultView({ result, onBack }: BudgetResultViewProps) {
               </div>
             </div>
           </div>
+
+          {/* House Image Preview */}
+          {(result.imageUrl || isGeneratingImage) && (
+            <div className="bg-zinc-900/50 backdrop-blur-xl p-6 rounded-[40px] border border-white/10 shadow-xl overflow-hidden relative group">
+              <div className="absolute inset-0 bg-blue-600/5 blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="flex flex-col md:flex-row gap-8 items-center">
+                <div className="w-full md:w-1/2 aspect-video bg-zinc-950/50 rounded-3xl border border-white/5 flex items-center justify-center relative overflow-hidden">
+                  {result.imageUrl ? (
+                    <img 
+                      src={result.imageUrl} 
+                      alt="Conceito da Casa" 
+                      className="w-full h-full object-cover rounded-3xl shadow-2xl border border-white/10 relative z-10"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center gap-4 text-blue-400/30">
+                      <Loader2 className="w-12 h-12 animate-spin" />
+                      <p className="text-[10px] font-black uppercase tracking-widest">Gerando Visualização 3D...</p>
+                    </div>
+                  )}
+                </div>
+                <div className="w-full md:w-1/2 space-y-4">
+                  <div className="space-y-1">
+                    <h3 className="text-2xl font-black text-blue-50 uppercase tracking-tighter">Conceito Arquitetônico</h3>
+                    <p className="text-blue-400/50 text-sm font-bold uppercase tracking-widest">Gerado por IA para Visar Construtora</p>
+                  </div>
+                  <p className="text-blue-100/70 leading-relaxed italic">
+                    "Esta visualização representa uma interpretação artística baseada nas especificações técnicas do seu projeto, 
+                    proporcionando uma visão clara do potencial estético da sua futura obra."
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Room Composition Summary */}
           <div className="bg-zinc-900/50 backdrop-blur-xl p-6 rounded-3xl border border-white/10 shadow-xl">
@@ -174,7 +265,10 @@ export function BudgetResultView({ result, onBack }: BudgetResultViewProps) {
         <div className="bg-zinc-900/50 backdrop-blur-xl rounded-3xl border border-white/10 shadow-xl overflow-hidden">
           <div className="p-6 border-b border-white/5 flex items-center justify-between">
             <h3 className="text-xl font-black text-blue-50">Detalhamento de Materiais e Serviços</h3>
-            <button className="text-blue-400 text-sm font-bold flex items-center gap-2 hover:text-blue-300 transition-colors">
+            <button 
+              onClick={handleExportCSV}
+              className="text-blue-400 text-sm font-bold flex items-center gap-2 hover:text-blue-300 transition-colors"
+            >
               <Download className="w-4 h-4" />
               Exportar CSV
             </button>
@@ -227,24 +321,52 @@ export function BudgetResultView({ result, onBack }: BudgetResultViewProps) {
       )}
 
       {viewMode === 'proposal' && (
-        <div className="max-w-3xl mx-auto space-y-8">
-          <div className="bg-zinc-900/50 backdrop-blur-xl p-8 md:p-12 rounded-3xl border border-white/10 shadow-2xl font-mono text-sm leading-relaxed whitespace-pre-wrap relative text-blue-100 selection:bg-blue-500/30">
-            <div className="absolute top-8 right-8 flex gap-2">
+        <div className="max-w-4xl mx-auto space-y-12">
+          {/* Action Bar for Proposal */}
+          <div className="flex items-center justify-between bg-zinc-900/50 backdrop-blur-xl p-4 rounded-2xl border border-white/10 sticky top-24 z-40 shadow-2xl">
+            <div className="flex items-center gap-4">
+              <div className="bg-blue-600/20 p-2 rounded-lg border border-blue-500/30">
+                <FileText className="w-5 h-5 text-blue-400" />
+              </div>
+              <div>
+                <p className="text-[10px] uppercase font-black text-blue-400/50 tracking-widest">Visualização</p>
+                <p className="text-sm font-bold text-blue-50">Documento Técnico Final</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
               <button 
                 onClick={handleCopyProposal}
-                className="p-3 bg-white/5 rounded-xl hover:bg-white/10 transition-all text-blue-400 border border-white/5"
-                title="Copiar Proposta"
+                className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-xl hover:bg-white/10 transition-all text-blue-400 border border-white/5 text-xs font-bold"
               >
-                {copied ? <Check className="w-5 h-5 text-green-400" /> : <Copy className="w-5 h-5" />}
+                {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
+                {copied ? 'Copiado' : 'Copiar Texto'}
+              </button>
+              <button 
+                onClick={handleSendWhatsApp}
+                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-500 transition-all text-xs font-bold shadow-lg shadow-green-600/20"
+              >
+                <Share2 className="w-4 h-4" />
+                WhatsApp
               </button>
             </div>
-            {generateProposalText(result)}
           </div>
+
+          <ProposalDocument result={result} />
           
-          <div className="flex justify-center gap-6">
-            <button className="bg-blue-600 text-blue-50 px-10 py-5 rounded-2xl font-black text-lg hover:bg-blue-500 transition-all flex items-center gap-3 shadow-[0_0_30px_rgba(37,99,235,0.3)] hover:scale-[1.02] active:scale-[0.98]">
+          <div className="flex flex-col sm:flex-row justify-center gap-6 pt-12">
+            <button 
+              onClick={handleSendWhatsApp}
+              className="w-full sm:w-auto bg-blue-600 text-blue-50 px-10 py-5 rounded-2xl font-black text-lg hover:bg-blue-500 transition-all flex items-center justify-center gap-3 shadow-[0_0_30px_rgba(37,99,235,0.3)] hover:scale-[1.02] active:scale-[0.98]"
+            >
               <Share2 className="w-6 h-6" />
               Enviar para o Cliente
+            </button>
+            <button 
+              onClick={handleShare}
+              className="w-full sm:w-auto bg-zinc-900/50 text-blue-100 border border-white/10 px-10 py-5 rounded-2xl font-black text-lg hover:bg-zinc-800 transition-all flex items-center justify-center gap-3 backdrop-blur-sm"
+            >
+              <Share2 className="w-6 h-6" />
+              Compartilhar
             </button>
           </div>
         </div>
