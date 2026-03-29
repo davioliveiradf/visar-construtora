@@ -5,9 +5,9 @@ import { cn } from '../utils';
 
 interface LayoutProps {
   children: React.ReactNode;
-  activeTab: 'home' | 'new' | 'history';
+  activeTab: 'home' | 'new';
   view: string;
-  onTabChange: (tab: 'home' | 'new' | 'history') => void;
+  onTabChange: (tab: 'home' | 'new') => void;
   onAdmin?: () => void;
 }
 
@@ -42,7 +42,6 @@ export function Layout({ children, activeTab, view, onTabChange, onAdmin }: Layo
             {[
               { id: 'home', label: 'Início', icon: HomeIcon },
               { id: 'new', label: 'Novo Orçamento', icon: PlusCircle },
-              { id: 'history', label: 'Histórico', icon: History },
             ].map((item) => (
               <button
                 key={item.id}
@@ -116,7 +115,6 @@ export function Layout({ children, activeTab, view, onTabChange, onAdmin }: Layo
         {[
           { id: 'home', label: 'Início', icon: HomeIcon },
           { id: 'new', label: 'Novo', icon: PlusCircle },
-          { id: 'history', label: 'Histórico', icon: History },
         ].map((item) => (
           <button 
             key={item.id}

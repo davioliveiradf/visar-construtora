@@ -85,20 +85,19 @@ export default function App() {
           />
         );
       case 'admin':
-        return <AdminArea onBack={() => setView('home')} />;
+        return <AdminArea onBack={() => setView('home')} onViewHistory={() => setView('history')} />;
       default:
         return <Home onNewBudget={() => setView('new')} onViewHistory={() => setView('history')} />;
     }
   };
 
-  const getActiveTab = (): 'home' | 'new' | 'history' => {
-    if (view === 'result') return 'history';
-    if (view === 'admin') return 'home';
-    return view as 'home' | 'new' | 'history';
+  const getActiveTab = (): 'home' | 'new' => {
+    if (view === 'new') return 'new';
+    return 'home';
   };
 
   return (
-    <Layout view={view} activeTab={getActiveTab()} onTabChange={(tab) => setView(tab)} onAdmin={() => setView('admin')}>
+    <Layout view={view} activeTab={getActiveTab()} onTabChange={(tab) => setView(tab as View)} onAdmin={() => setView('admin')}>
       {renderView()}
     </Layout>
   );

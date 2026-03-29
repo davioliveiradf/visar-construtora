@@ -31,13 +31,6 @@ export function Home({ onNewBudget, onViewHistory }: HomeProps) {
             <PlusCircle className="w-7 h-7 group-hover:rotate-90 transition-transform" />
             Iniciar Orçamento
           </button>
-          <button
-            onClick={onViewHistory}
-            className="w-full sm:w-auto bg-zinc-900/50 text-blue-100 border border-white/10 px-10 py-5 rounded-2xl font-bold text-xl hover:bg-zinc-800 hover:scale-[1.02] transition-all flex items-center justify-center gap-3 backdrop-blur-sm"
-          >
-            <History className="w-7 h-7" />
-            Histórico
-          </button>
         </div>
       </section>
 

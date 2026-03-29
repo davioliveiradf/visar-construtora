@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Lock, Settings, Save, ArrowLeft, Eye, EyeOff, DollarSign } from 'lucide-react';
+import { Lock, Settings, Save, ArrowLeft, Eye, EyeOff, DollarSign, History } from 'lucide-react';
 import { PRICES } from '../data/sinapi';
 
 interface AdminAreaProps {
   onBack: () => void;
+  onViewHistory: () => void;
 }
 
-export function AdminArea({ onBack }: AdminAreaProps) {
+export function AdminArea({ onBack, onViewHistory }: AdminAreaProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
   const [laborM2, setLaborM2] = useState(PRICES.labor_m2.toString());
@@ -145,6 +146,29 @@ export function AdminArea({ onBack }: AdminAreaProps) {
             </div>
             <div className={`w-12 h-6 rounded-full relative transition-all ${hideM2 ? 'bg-purple-500' : 'bg-zinc-800'}`}>
               <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${hideM2 ? 'left-7' : 'left-1'}`} />
+            </div>
+          </button>
+        </div>
+
+        {/* History Access */}
+        <div className="space-y-6 pt-6 border-t border-white/5">
+          <div className="flex items-center gap-3">
+            <div className="bg-emerald-500/20 p-2 rounded-lg">
+              <History className="w-5 h-5 text-emerald-400" />
+            </div>
+            <h3 className="text-xl font-black text-blue-50 uppercase tracking-tighter">Gestão de Orçamentos</h3>
+          </div>
+          
+          <button 
+            onClick={onViewHistory}
+            className="w-full bg-zinc-950/50 border border-white/5 p-6 rounded-3xl hover:bg-zinc-800 transition-all flex items-center justify-between group"
+          >
+            <div className="text-left">
+              <p className="font-black text-blue-50 uppercase tracking-tight group-hover:text-blue-400 transition-colors">Histórico de Orçamentos</p>
+              <p className="text-xs font-bold text-blue-400/50 uppercase tracking-widest">Visualizar e gerenciar orçamentos salvos</p>
+            </div>
+            <div className="bg-emerald-500/20 p-3 rounded-xl group-hover:scale-110 transition-all">
+              <History className="w-6 h-6 text-emerald-400" />
             </div>
           </button>
         </div>

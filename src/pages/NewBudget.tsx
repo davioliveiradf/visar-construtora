@@ -9,6 +9,8 @@ interface BudgetFormProps {
 export function BudgetForm({ onSubmit }: BudgetFormProps) {
   const [formData, setFormData] = useState<Partial<BudgetInput>>({
     clientName: '',
+    clientPhone: '',
+    clientEmail: '',
     area: 89,
     city: '',
     state: '',
@@ -104,6 +106,28 @@ export function BudgetForm({ onSubmit }: BudgetFormProps) {
               value={formData.clientName}
               onChange={handleChange}
               placeholder="Ex: João Silva"
+              className="w-full bg-zinc-950/50 border border-white/10 rounded-xl px-4 py-3 text-blue-100 focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder:text-zinc-600"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-blue-400/70 uppercase tracking-widest">Telefone</label>
+            <input
+              type="tel"
+              name="clientPhone"
+              value={formData.clientPhone}
+              onChange={handleChange}
+              placeholder="(00) 00000-0000"
+              className="w-full bg-zinc-950/50 border border-white/10 rounded-xl px-4 py-3 text-blue-100 focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder:text-zinc-600"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-blue-400/70 uppercase tracking-widest">E-mail</label>
+            <input
+              type="email"
+              name="clientEmail"
+              value={formData.clientEmail}
+              onChange={handleChange}
+              placeholder="joao@email.com"
               className="w-full bg-zinc-950/50 border border-white/10 rounded-xl px-4 py-3 text-blue-100 focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder:text-zinc-600"
             />
           </div>

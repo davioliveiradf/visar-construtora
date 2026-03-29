@@ -210,6 +210,8 @@ SOBRE NÓS:
 ${COMPANY_INFO.description}
 
 CLIENTE: ${input.clientName}
+TELEFONE: ${input.clientPhone || 'Não informado'}
+E-MAIL: ${input.clientEmail || 'Não informado'}
 LOCAL: ${input.city} - ${input.state}
 DATA: ${new Date(input.createdAt).toLocaleDateString('pt-BR')}
 

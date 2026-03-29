@@ -17,6 +17,8 @@ export type FacadeStyle = 'platibanda' | 'colonial' | 'moderna' | 'minimalista' 
 export interface BudgetInput {
   id: string;
   clientName: string;
+  clientPhone: string;
+  clientEmail: string;
   area: number;
   city: string;
   state: string;

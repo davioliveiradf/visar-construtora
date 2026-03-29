@@ -37,6 +37,10 @@ export function ProposalDocument({ result }: ProposalDocumentProps) {
           <div className="space-y-2">
             <p className="text-blue-300/70 uppercase tracking-[0.4em] font-black text-sm">Preparado para</p>
             <h2 className="text-4xl font-black text-blue-50">{input.clientName}</h2>
+            <div className="flex flex-col items-center gap-1">
+              {input.clientPhone && <p className="text-blue-200/50 font-bold tracking-wider">{input.clientPhone}</p>}
+              {input.clientEmail && <p className="text-blue-200/50 font-bold tracking-wider">{input.clientEmail}</p>}
+            </div>
           </div>
 
           <div className="flex items-center justify-center gap-8 pt-8">
