@@ -11,11 +11,13 @@ interface ProposalDocumentProps {
 export function ProposalDocument({ result }: ProposalDocumentProps) {
   const { input, totalCost, totalMaterialCost, totalLaborCost, costPerM2, estimatedDeadline, materials } = result;
   const hideM2 = localStorage.getItem('admin_hide_m2') === 'true';
+  const customAdminImage = localStorage.getItem('admin_custom_image');
+  const displayImage = customAdminImage || result.imageUrl;
 
   return (
     <div className="bg-white text-zinc-900 rounded-[40px] overflow-hidden shadow-2xl border border-white/10 selection:bg-blue-100">
       {/* Cover Page */}
-      <div className="relative min-h-[600px] bg-[#0A0A0B] flex flex-col items-center justify-center p-12 text-center overflow-hidden">
+      <div className="relative min-h-[600px] bg-[#0A0A0B] flex flex-col items-center justify-center p-12 text-center overflow-hidden [page-break-inside:avoid]">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-blue-600/20 blur-[150px] rounded-full" />
           <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-purple-600/20 blur-[150px] rounded-full" />
@@ -75,16 +77,16 @@ export function ProposalDocument({ result }: ProposalDocumentProps) {
       </div>
 
       {/* House Image Page */}
-      {result.imageUrl && (
-        <div className="p-12 md:p-20 bg-zinc-900 flex flex-col items-center justify-center space-y-8">
+      {displayImage && (
+        <div className="p-12 md:p-20 bg-zinc-900 flex flex-col items-center justify-center space-y-8 [page-break-inside:avoid]">
           <div className="text-center space-y-2">
-            <h3 className="text-2xl font-black text-blue-50 uppercase tracking-tighter">Visualização 3D Sugerida</h3>
+            <h3 className="text-2xl font-black text-blue-50 uppercase tracking-tighter">Visualização Sugerida</h3>
             <p className="text-xs font-bold text-blue-400/50 uppercase tracking-widest">Conceito arquitetônico baseado nas suas escolhas</p>
           </div>
           <div className="relative group max-w-5xl w-full">
             <div className="absolute inset-0 bg-blue-600/20 blur-[100px] rounded-full opacity-50 group-hover:opacity-100 transition-opacity" />
             <img 
-              src={result.imageUrl} 
+              src={displayImage} 
               alt="Conceito da Casa" 
               className="relative z-10 w-full rounded-[40px] shadow-2xl border border-white/10"
               referrerPolicy="no-referrer"
@@ -94,7 +96,7 @@ export function ProposalDocument({ result }: ProposalDocumentProps) {
       )}
 
       {/* Institutional Page */}
-      <div className="p-12 md:p-20 space-y-12 bg-zinc-50">
+      <div className="p-12 md:p-20 space-y-12 bg-zinc-50 [page-break-inside:avoid]">
         <div className="max-w-3xl mx-auto space-y-8">
           <div className="flex items-center gap-4 text-blue-600">
             <Building2 className="w-8 h-8" />
@@ -117,7 +119,7 @@ export function ProposalDocument({ result }: ProposalDocumentProps) {
       </div>
 
       {/* Technical Details Page */}
-      <div className="p-12 md:p-20 space-y-16">
+      <div className="p-12 md:p-20 space-y-16 [page-break-inside:avoid]">
         <div className="space-y-12">
           <h3 className="text-3xl font-black text-zinc-900 uppercase tracking-tighter border-b-4 border-blue-600 inline-block pb-2">Resumo do Projeto</h3>
           
@@ -139,7 +141,7 @@ export function ProposalDocument({ result }: ProposalDocumentProps) {
           </div>
         </div>
 
-        <div className="space-y-12">
+        <div className="space-y-12 [page-break-inside:avoid]">
           <h3 className="text-3xl font-black text-zinc-900 uppercase tracking-tighter border-b-4 border-blue-600 inline-block pb-2">Investimento Estimado</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -167,7 +169,7 @@ export function ProposalDocument({ result }: ProposalDocumentProps) {
           </div>
         </div>
 
-        <div className="space-y-8">
+        <div className="space-y-8 [page-break-inside:avoid]">
           <h3 className="text-xl font-black text-zinc-900 uppercase tracking-tight">Principais Insumos</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {materials.filter(m => m.materialPrice > 0).slice(0, 10).map((m, i) => (
@@ -180,7 +182,7 @@ export function ProposalDocument({ result }: ProposalDocumentProps) {
           </div>
         </div>
 
-        <div className="pt-20 text-center space-y-8">
+        <div className="pt-20 text-center space-y-8 [page-break-inside:avoid]">
           <div className="h-px bg-zinc-200 w-full" />
           <div className="flex flex-col items-center gap-4">
             <div className="bg-zinc-900 p-3 rounded-xl">

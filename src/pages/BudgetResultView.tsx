@@ -75,12 +75,31 @@ export function BudgetResultView({ result, onBack, isGeneratingImage }: BudgetRe
     window.open(`https://wa.me/5561999547241?text=${encodedText}`, '_blank');
   };
 
+  const handleDownloadPDF = () => {
+    window.print();
+  };
+
+  const handleDownloadTXT = () => {
+    const text = generateProposalText(result);
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `proposta_${result.input.clientName.replace(/\s+/g, '_')}.txt`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const hideM2 = localStorage.getItem('admin_hide_m2') === 'true';
+  const customAdminImage = localStorage.getItem('admin_custom_image');
+  const displayImage = customAdminImage || result.imageUrl;
 
   return (
     <div className="space-y-8 pb-20">
       {/* Header Actions */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 no-print">
         <button 
           type="button"
           onClick={onBack}
@@ -154,14 +173,14 @@ export function BudgetResultView({ result, onBack, isGeneratingImage }: BudgetRe
           </div>
 
           {/* House Image Preview */}
-          {(result.imageUrl || isGeneratingImage) && (
+          {(displayImage || isGeneratingImage) && (
             <div className="bg-zinc-900/50 backdrop-blur-xl p-6 rounded-[40px] border border-white/10 shadow-xl overflow-hidden relative group">
               <div className="absolute inset-0 bg-blue-600/5 blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
               <div className="flex flex-col md:flex-row gap-8 items-center">
                 <div className="w-full md:w-1/2 aspect-video bg-zinc-950/50 rounded-3xl border border-white/5 flex items-center justify-center relative overflow-hidden">
-                  {result.imageUrl ? (
+                  {displayImage ? (
                     <img 
-                      src={result.imageUrl} 
+                      src={displayImage} 
                       alt="Conceito da Casa" 
                       className="w-full h-full object-cover rounded-3xl shadow-2xl border border-white/10 relative z-10"
                       referrerPolicy="no-referrer"
@@ -323,7 +342,7 @@ export function BudgetResultView({ result, onBack, isGeneratingImage }: BudgetRe
       {viewMode === 'proposal' && (
         <div className="max-w-4xl mx-auto space-y-12">
           {/* Action Bar for Proposal */}
-          <div className="flex items-center justify-between bg-zinc-900/50 backdrop-blur-xl p-4 rounded-2xl border border-white/10 sticky top-24 z-40 shadow-2xl">
+          <div className="flex items-center justify-between bg-zinc-900/50 backdrop-blur-xl p-4 rounded-2xl border border-white/10 sticky top-24 z-40 shadow-2xl no-print">
             <div className="flex items-center gap-4">
               <div className="bg-blue-600/20 p-2 rounded-lg border border-blue-500/30">
                 <FileText className="w-5 h-5 text-blue-400" />
@@ -334,6 +353,22 @@ export function BudgetResultView({ result, onBack, isGeneratingImage }: BudgetRe
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <button 
+                onClick={handleDownloadPDF}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600/20 rounded-xl hover:bg-blue-600/30 transition-all text-blue-400 border border-blue-500/30 text-xs font-bold"
+                title="Baixar como PDF"
+              >
+                <Download className="w-4 h-4" />
+                PDF
+              </button>
+              <button 
+                onClick={handleDownloadTXT}
+                className="flex items-center gap-2 px-4 py-2 bg-zinc-800 rounded-xl hover:bg-zinc-700 transition-all text-blue-100 border border-white/5 text-xs font-bold"
+                title="Baixar como Texto"
+              >
+                <FileText className="w-4 h-4" />
+                TXT
+              </button>
               <button 
                 onClick={handleCopyProposal}
                 className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-xl hover:bg-white/10 transition-all text-blue-400 border border-white/5 text-xs font-bold"
@@ -351,9 +386,18 @@ export function BudgetResultView({ result, onBack, isGeneratingImage }: BudgetRe
             </div>
           </div>
 
-          <ProposalDocument result={result} />
+          <div className="print-container">
+            <ProposalDocument result={result} />
+          </div>
           
-          <div className="flex flex-col sm:flex-row justify-center gap-6 pt-12">
+          <div className="flex flex-col sm:flex-row justify-center gap-6 pt-12 no-print">
+            <button 
+              onClick={handleDownloadPDF}
+              className="w-full sm:w-auto bg-zinc-900/50 text-blue-100 border border-white/10 px-10 py-5 rounded-2xl font-black text-lg hover:bg-zinc-800 transition-all flex items-center justify-center gap-3 backdrop-blur-sm"
+            >
+              <Download className="w-6 h-6" />
+              Baixar PDF
+            </button>
             <button 
               onClick={handleSendWhatsApp}
               className="w-full sm:w-auto bg-blue-600 text-blue-50 px-10 py-5 rounded-2xl font-black text-lg hover:bg-blue-500 transition-all flex items-center justify-center gap-3 shadow-[0_0_30px_rgba(37,99,235,0.3)] hover:scale-[1.02] active:scale-[0.98]"

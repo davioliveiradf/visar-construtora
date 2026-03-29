@@ -15,3 +15,29 @@ body {
   background-color: var(--color-background);
   color: var(--color-text-primary);
 }
+
+@layer base {
+  @media print {
+    header, footer, nav, button, .no-print, .fixed, .sticky, .whatsapp-button {
+      display: none !important;
+    }
+    
+    body {
+      background: white !important;
+      color: black !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    .print-container {
+      width: 100% !important;
+      max-width: none !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      box-shadow: none !important;
+      border: none !important;
+    }
+  }
+}

@@ -22,7 +22,7 @@ export function Layout({ children, activeTab, view, onTabChange, onAdmin }: Layo
       </div>
 
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-[#0A0A0B]/80 backdrop-blur-xl border-b border-white/5">
+      <header className="sticky top-0 z-50 bg-[#0A0A0B]/80 backdrop-blur-xl border-b border-white/5 no-print">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div 
             className="flex items-center gap-3 cursor-pointer group"
@@ -77,7 +77,7 @@ export function Layout({ children, activeTab, view, onTabChange, onAdmin }: Layo
       </main>
 
       {/* Footer */}
-      <footer className="mt-auto py-12 px-6 border-t border-white/5 bg-zinc-950/50">
+      <footer className="mt-auto py-12 px-6 border-t border-white/5 bg-zinc-950/50 no-print">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
           <div className="flex items-center gap-3 opacity-50">
             <HardHat className="w-5 h-5 text-blue-400" />
@@ -95,7 +95,7 @@ export function Layout({ children, activeTab, view, onTabChange, onAdmin }: Layo
         href="https://wa.me/5561999547241"
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed bottom-24 md:bottom-8 right-6 z-50 bg-green-600 text-white p-4 rounded-full shadow-[0_0_30px_rgba(22,163,74,0.4)] hover:bg-green-500 hover:scale-110 transition-all group"
+        className="fixed bottom-24 md:bottom-8 right-6 z-50 bg-green-600 text-white p-4 rounded-full shadow-[0_0_30px_rgba(22,163,74,0.4)] hover:bg-green-500 hover:scale-110 transition-all group no-print"
         title="Falar com a Visar Construtora"
       >
         <svg 
@@ -111,7 +111,7 @@ export function Layout({ children, activeTab, view, onTabChange, onAdmin }: Layo
       </a>
 
       {/* Mobile Bottom Nav */}
-      <div className="md:hidden fixed bottom-6 left-6 right-6 bg-[#141416]/80 backdrop-blur-2xl border border-white/10 px-8 py-4 rounded-[32px] flex justify-between items-center z-50 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+      <div className="md:hidden fixed bottom-6 left-6 right-6 bg-[#141416]/80 backdrop-blur-2xl border border-white/10 px-8 py-4 rounded-[32px] flex justify-between items-center z-50 shadow-[0_20px_50px_rgba(0,0,0,0.5)] no-print">
         {[
           { id: 'home', label: 'Início', icon: HomeIcon },
           { id: 'new', label: 'Novo', icon: PlusCircle },

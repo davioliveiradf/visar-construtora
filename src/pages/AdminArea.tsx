@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Lock, Settings, Save, ArrowLeft, Eye, EyeOff, DollarSign, History } from 'lucide-react';
+import { Lock, Settings, Save, ArrowLeft, Eye, EyeOff, DollarSign, History, Image as ImageIcon, Trash2, Upload } from 'lucide-react';
 import { PRICES } from '../data/sinapi';
 
 interface AdminAreaProps {
@@ -12,6 +12,7 @@ export function AdminArea({ onBack, onViewHistory }: AdminAreaProps) {
   const [password, setPassword] = useState('');
   const [laborM2, setLaborM2] = useState(PRICES.labor_m2.toString());
   const [hideM2, setHideM2] = useState(localStorage.getItem('admin_hide_m2') === 'true');
+  const [customImage, setCustomImage] = useState(localStorage.getItem('admin_custom_image') || '');
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
 
@@ -33,8 +34,34 @@ export function AdminArea({ onBack, onViewHistory }: AdminAreaProps) {
   const handleSave = () => {
     localStorage.setItem('admin_labor_m2', laborM2);
     localStorage.setItem('admin_hide_m2', hideM2.toString());
+    if (customImage) {
+      localStorage.setItem('admin_custom_image', customImage);
+    } else {
+      localStorage.removeItem('admin_custom_image');
+    }
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 1024 * 1024) { // 1MB limit for localStorage safety
+      setError('A imagem é muito grande. Use uma imagem menor que 1MB.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setCustomImage(reader.result as string);
+      setError('');
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveImage = () => {
+    setCustomImage('');
   };
 
   if (!isAuthenticated) {
@@ -148,6 +175,48 @@ export function AdminArea({ onBack, onViewHistory }: AdminAreaProps) {
               <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${hideM2 ? 'left-7' : 'left-1'}`} />
             </div>
           </button>
+        </div>
+
+        {/* Custom Image Setting */}
+        <div className="space-y-6">
+          <div className="flex items-center gap-3">
+            <div className="bg-orange-500/20 p-2 rounded-lg">
+              <ImageIcon className="w-5 h-5 text-orange-400" />
+            </div>
+            <h3 className="text-xl font-black text-blue-50 uppercase tracking-tighter">Imagem do Orçamento</h3>
+          </div>
+
+          <div className="space-y-4">
+            <p className="text-xs font-bold text-blue-400/50 uppercase tracking-widest ml-4">
+              Esta imagem aparecerá em todos os orçamentos (substitui a imagem da IA)
+            </p>
+            
+            {customImage ? (
+              <div className="relative group rounded-3xl overflow-hidden border border-white/10 aspect-video bg-zinc-950/50">
+                <img src={customImage} alt="Preview" className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
+                  <button 
+                    onClick={handleRemoveImage}
+                    className="bg-red-600 text-white p-3 rounded-xl hover:bg-red-500 transition-all flex items-center gap-2 font-bold text-xs uppercase tracking-widest"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Remover
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <label className="flex flex-col items-center justify-center gap-4 p-12 border-2 border-dashed border-white/10 rounded-3xl hover:border-blue-500/50 hover:bg-blue-500/5 transition-all cursor-pointer group">
+                <div className="bg-blue-500/20 p-4 rounded-2xl group-hover:scale-110 transition-all">
+                  <Upload className="w-8 h-8 text-blue-400" />
+                </div>
+                <div className="text-center">
+                  <p className="font-black text-blue-50 uppercase tracking-tight">Adicionar Foto</p>
+                  <p className="text-[10px] font-bold text-blue-400/50 uppercase tracking-widest mt-1">PNG, JPG ou WEBP (Máx. 1MB)</p>
+                </div>
+                <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+              </label>
+            )}
+          </div>
         </div>
 
         {/* History Access */}
