@@ -27,27 +27,43 @@ export default function App() {
   }, [view]);
 
   const handleCreateBudget = async (input: BudgetInput) => {
-    // 1. Calculate budget immediately
-    const result = calculateBudget(input);
-    setCurrentBudget(result);
-    saveBudget(result); // Save immediately so it's in history
-    setHistory(getHistory());
-    setView('result');
-    
-    // 2. Start image generation in background
-    setIsGeneratingImage(true);
     try {
-      const imageUrl = await generateHouseImage(input);
-      if (imageUrl) {
-        const finalResult = { ...result, imageUrl };
-        setCurrentBudget(finalResult);
-        updateBudget(finalResult); // Update the existing record
+      // 1. Calculate budget immediately
+      const result = calculateBudget(input);
+      setCurrentBudget(result);
+      
+      try {
+        saveBudget(result); // Save immediately so it's in history
         setHistory(getHistory());
+      } catch (storageError) {
+        console.warn("Could not save to history:", storageError);
+        // Continue even if history save fails (e.g. private mode or full storage)
       }
-    } catch (error) {
-      console.error("Error generating image:", error);
-    } finally {
-      setIsGeneratingImage(false);
+      
+      setView('result');
+      
+      // 2. Start image generation in background
+      setIsGeneratingImage(true);
+      try {
+        const imageUrl = await generateHouseImage(input);
+        if (imageUrl) {
+          const finalResult = { ...result, imageUrl };
+          setCurrentBudget(finalResult);
+          try {
+            updateBudget(finalResult); // Update the existing record
+            setHistory(getHistory());
+          } catch (updateError) {
+            console.warn("Could not update history with image:", updateError);
+          }
+        }
+      } catch (error) {
+        console.error("Error generating image:", error);
+      } finally {
+        setIsGeneratingImage(false);
+      }
+    } catch (err) {
+      console.error("Critical error generating budget:", err);
+      alert("Ocorreu um erro ao gerar o orçamento. Por favor, verifique os dados e tente novamente.");
     }
   };
 

@@ -114,7 +114,9 @@ export function calculateBudget(input: BudgetInput): BudgetResult {
 
   // 9. Labor (Mão de obra) - Distributed by categories
   const savedLaborM2 = localStorage.getItem('admin_labor_m2');
-  const baseLaborM2 = savedLaborM2 ? parseFloat(savedLaborM2) : PRICES.labor_m2;
+  let baseLaborM2 = savedLaborM2 ? parseFloat(savedLaborM2) : PRICES.labor_m2;
+  if (isNaN(baseLaborM2)) baseLaborM2 = PRICES.labor_m2;
+  
   const totalLaborCost = area * baseLaborM2 * multiplier;
   
   const laborWeights: Record<string, number> = {
@@ -258,7 +260,13 @@ VISAR CONSTRUTORA
 }
 
 export async function generateHouseImage(input: BudgetInput): Promise<string | undefined> {
-  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey || apiKey === 'undefined') {
+    console.warn("Gemini API key not found. Skipping image generation.");
+    return undefined;
+  }
+
+  const ai = new GoogleGenAI({ apiKey });
   
   const prompt = `Arquitetura contemporânea brasileira - MODELO VISAR CONSTRUTORA: 
     Uma casa moderna de alto padrão, TÉRREA, seguindo RIGOROSAMENTE este modelo arquitetônico:

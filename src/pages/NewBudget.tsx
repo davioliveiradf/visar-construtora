@@ -55,6 +55,11 @@ export function BudgetForm({ onSubmit }: BudgetFormProps) {
     }
     
     // Updated limit to be more flexible for a construction company
+    if (formData.area <= 0) {
+      setError('A área deve ser maior que zero.');
+      return;
+    }
+
     if (formData.area > 500) {
       setError('Para áreas acima de 500 m², entre em contato direto com a engenharia da Visar Construtora.');
       return;
@@ -62,9 +67,13 @@ export function BudgetForm({ onSubmit }: BudgetFormProps) {
 
     setIsSubmitting(true);
     try {
+      const budgetId = typeof crypto.randomUUID === 'function' 
+        ? crypto.randomUUID() 
+        : Math.random().toString(36).substring(2) + Date.now().toString(36);
+
       await onSubmit({
         ...formData,
-        id: crypto.randomUUID(),
+        id: budgetId,
         createdAt: new Date().toISOString(),
       } as BudgetInput);
     } finally {
