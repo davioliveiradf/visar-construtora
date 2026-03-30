@@ -8,6 +8,7 @@ import { AdminArea } from './pages/AdminArea';
 import { BudgetInput, BudgetResult } from './types';
 import { calculateBudget, saveBudget, updateBudget, getHistory, generateHouseImage } from './services/budgetService';
 import { Loader2 } from 'lucide-react';
+import { ChatWidget } from './components/ChatWidget';
 
 type View = 'home' | 'new' | 'result' | 'history' | 'admin';
 
@@ -115,6 +116,7 @@ export default function App() {
   return (
     <Layout view={view} activeTab={getActiveTab()} onTabChange={(tab) => setView(tab as View)} onAdmin={() => setView('admin')}>
       {renderView()}
+      <ChatWidget />
     </Layout>
   );
 }

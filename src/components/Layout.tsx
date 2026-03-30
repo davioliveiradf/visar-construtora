@@ -2,6 +2,7 @@ import React from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Calculator, History, PlusCircle, Home as HomeIcon, HardHat, Menu, X } from 'lucide-react';
 import { cn } from '../utils';
+import { ChatAssistant } from './ChatAssistant';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -90,12 +91,15 @@ export function Layout({ children, activeTab, view, onTabChange, onAdmin }: Layo
         </div>
       </footer>
 
+      {/* Chat Assistant */}
+      <ChatAssistant />
+
       {/* WhatsApp Floating Button */}
       <a
         href="https://wa.me/5561999547241"
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed bottom-24 md:bottom-8 right-6 z-50 bg-green-600 text-white p-4 rounded-full shadow-[0_0_30px_rgba(22,163,74,0.4)] hover:bg-green-500 hover:scale-110 transition-all group no-print"
+        className="fixed bottom-40 md:bottom-24 right-6 z-50 bg-green-600 text-white p-4 rounded-full shadow-[0_0_30px_rgba(22,163,74,0.4)] hover:bg-green-500 hover:scale-110 transition-all group no-print"
         title="Falar com a Visar Construtora"
       >
         <svg 
