@@ -260,6 +260,11 @@ VISAR CONSTRUTORA
 }
 
 export async function generateHouseImage(input: BudgetInput): Promise<string | undefined> {
+  // Use specific image for houses up to 100m2
+  if (input.area <= 100) {
+    return "https://i.imgur.com/Yy5TWtm.png";
+  }
+
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey || apiKey === 'undefined') {
     console.warn("Gemini API key not found. Skipping image generation.");

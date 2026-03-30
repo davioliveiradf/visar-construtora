@@ -12,7 +12,11 @@ export function ProposalDocument({ result }: ProposalDocumentProps) {
   const { input, totalCost, totalMaterialCost, totalLaborCost, costPerM2, estimatedDeadline, materials } = result;
   const hideM2 = localStorage.getItem('admin_hide_m2') === 'true';
   const customAdminImage = localStorage.getItem('admin_custom_image');
-  const displayImage = customAdminImage || result.imageUrl;
+  
+  // Force specific image for houses up to 100m2
+  const displayImage = result.input.area <= 100 
+    ? "https://i.imgur.com/Yy5TWtm.png" 
+    : (customAdminImage || result.imageUrl);
 
   return (
     <div className="bg-white text-zinc-900 rounded-[40px] overflow-hidden shadow-2xl border border-white/10 selection:bg-blue-100">

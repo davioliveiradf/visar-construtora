@@ -94,7 +94,11 @@ export function BudgetResultView({ result, onBack, isGeneratingImage }: BudgetRe
 
   const hideM2 = localStorage.getItem('admin_hide_m2') === 'true';
   const customAdminImage = localStorage.getItem('admin_custom_image');
-  const displayImage = customAdminImage || result.imageUrl;
+  
+  // Force specific image for houses up to 100m2
+  const displayImage = result.input.area <= 100 
+    ? "https://i.imgur.com/Yy5TWtm.png" 
+    : (customAdminImage || result.imageUrl);
 
   return (
     <div className="space-y-8 pb-20">
