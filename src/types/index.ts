@@ -57,6 +57,7 @@ export interface BudgetInput {
   lotLength: number;
   facadeStyle: FacadeStyle;
   
+  sendCopy?: boolean;
   createdAt: string;
 }
 

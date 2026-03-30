@@ -180,6 +180,19 @@ export function BudgetForm({ onSubmit }: BudgetFormProps) {
               ))}
             </select>
           </div>
+          <div className="md:col-span-4 flex items-center gap-3 p-4 bg-blue-500/5 rounded-2xl border border-blue-500/10">
+            <input
+              type="checkbox"
+              id="sendCopy"
+              name="sendCopy"
+              checked={formData.sendCopy || false}
+              onChange={(e) => setFormData(prev => ({ ...prev, sendCopy: e.target.checked }))}
+              className="w-5 h-5 rounded border-white/10 bg-zinc-950 text-blue-600 focus:ring-blue-500"
+            />
+            <label htmlFor="sendCopy" className="text-sm font-bold text-blue-100 cursor-pointer">
+              Enviar cópia automática ao cliente via WhatsApp após gerar
+            </label>
+          </div>
         </div>
 
         <div className="pt-4">

@@ -6,7 +6,7 @@ import { BudgetResultView } from './pages/BudgetResultView';
 import { HistoryList } from './pages/HistoryList';
 import { AdminArea } from './pages/AdminArea';
 import { BudgetInput, BudgetResult } from './types';
-import { calculateBudget, saveBudget, updateBudget, getHistory, generateHouseImage } from './services/budgetService';
+import { calculateBudget, saveBudget, updateBudget, getHistory, generateHouseImage, generateProposalText } from './services/budgetService';
 import { Loader2 } from 'lucide-react';
 import { ChatWidget } from './components/ChatWidget';
 
@@ -38,10 +38,22 @@ export default function App() {
         setHistory(getHistory());
       } catch (storageError) {
         console.warn("Could not save to history:", storageError);
-        // Continue even if history save fails (e.g. private mode or full storage)
       }
       
       setView('result');
+
+      // Handle automatic copy to consumer if requested
+      if (input.sendCopy) {
+        const text = generateProposalText(result);
+        const encodedText = encodeURIComponent(text);
+        let phone = input.clientPhone ? input.clientPhone.replace(/\D/g, '') : '';
+        if (phone) {
+          if (phone.length === 10 || phone.length === 11) {
+            phone = `55${phone}`;
+          }
+          window.open(`https://wa.me/${phone}?text=${encodedText}`, '_blank');
+        }
+      }
       
       // 2. Start image generation in background
       setIsGeneratingImage(true);

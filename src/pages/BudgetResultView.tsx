@@ -72,7 +72,29 @@ export function BudgetResultView({ result, onBack, isGeneratingImage }: BudgetRe
   const handleSendWhatsApp = () => {
     const text = generateProposalText(result);
     const encodedText = encodeURIComponent(text);
-    window.open(`https://wa.me/5561999547241?text=${encodedText}`, '_blank');
+    
+    // Clean phone number: remove non-digits
+    let phone = result.input.clientPhone ? result.input.clientPhone.replace(/\D/g, '') : '';
+    
+    // If no phone provided, use the default company number as fallback
+    if (!phone) {
+      phone = '5561999547241';
+    } else {
+      // If it's a Brazilian number without country code (10 or 11 digits), add 55
+      if (phone.length === 10 || phone.length === 11) {
+        phone = `55${phone}`;
+      }
+    }
+    
+    window.open(`https://wa.me/${phone}?text=${encodedText}`, '_blank');
+  };
+
+  const handleSendEmail = () => {
+    const text = generateProposalText(result);
+    const subject = encodeURIComponent(`Orçamento de Construção - ${result.input.clientName}`);
+    const body = encodeURIComponent(text);
+    const email = result.input.clientEmail || '';
+    window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
   };
 
   const handleDownloadPDF = () => {
@@ -387,6 +409,13 @@ export function BudgetResultView({ result, onBack, isGeneratingImage }: BudgetRe
                 <Share2 className="w-4 h-4" />
                 WhatsApp
               </button>
+              <button 
+                onClick={handleSendEmail}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-500 transition-all text-xs font-bold shadow-lg shadow-blue-600/20"
+              >
+                <FileText className="w-4 h-4" />
+                E-mail
+              </button>
             </div>
           </div>
 
@@ -404,10 +433,17 @@ export function BudgetResultView({ result, onBack, isGeneratingImage }: BudgetRe
             </button>
             <button 
               onClick={handleSendWhatsApp}
-              className="w-full sm:w-auto bg-blue-600 text-blue-50 px-10 py-5 rounded-2xl font-black text-lg hover:bg-blue-500 transition-all flex items-center justify-center gap-3 shadow-[0_0_30px_rgba(37,99,235,0.3)] hover:scale-[1.02] active:scale-[0.98]"
+              className="w-full sm:w-auto bg-green-600 text-white px-10 py-5 rounded-2xl font-black text-lg hover:bg-green-500 transition-all flex items-center justify-center gap-3 shadow-[0_0_30px_rgba(22,163,74,0.3)] hover:scale-[1.02] active:scale-[0.98]"
             >
               <Share2 className="w-6 h-6" />
-              Enviar para o Cliente
+              WhatsApp Cliente
+            </button>
+            <button 
+              onClick={handleSendEmail}
+              className="w-full sm:w-auto bg-blue-600 text-blue-50 px-10 py-5 rounded-2xl font-black text-lg hover:bg-blue-500 transition-all flex items-center justify-center gap-3 shadow-[0_0_30px_rgba(37,99,235,0.3)] hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <FileText className="w-6 h-6" />
+              E-mail Cliente
             </button>
             <button 
               onClick={handleShare}
